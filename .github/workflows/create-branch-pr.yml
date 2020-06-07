@@ -1,0 +1,38 @@
+name: 'Branch-PR'
+
+on:
+  schedule:
+    - cron: "11 * * * *"
+
+jobs:
+  create-branch:
+    name: 'Git'
+    runs-on: ubuntu-latest
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    # Checkout the repository to the GitHub Actions runner
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Configure git
+      run: git config --global user.email "nagamallika.bandaru@gmail.com" && git config --global user.name "nagamallika"
+
+    - name: Delete branch
+      run: git push origin --delete My-Test-Branch || true
+
+    - name: Create branch
+      run: git checkout -b My-Test-Branch
+
+    - name: rewrite file
+      run: echo `date` > timefile.txt && git add timefile.txt && git commit -m  "tmpfile commit" && git push --set-upstream origin My-Test-Branch
+
+    - name: create pr
+      run: hub pull-request -b master -m "Test"
+      env:
+        GITHUB_PASSWORD: ${{ secrets.NM_TOKEN }}
+        GITHUB_USERNAME: nagamallika
